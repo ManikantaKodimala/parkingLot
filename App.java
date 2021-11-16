@@ -35,6 +35,7 @@ class App{
             case create_parking_lot:
 
                 parkingLot= new ParkingLot(splitInput[1],Integer.parseInt(splitInput[2]),Integer.parseInt(splitInput[3]));
+                System.out.println("Created parking lot with "+splitInput[2]+" floors and " +splitInput[3]+" slots per floor");
                 break;
             case park_vehicle:
                 type=splitInput[1];
@@ -53,6 +54,7 @@ class App{
                     parkingLot.displayFreeSlotsOf(splitInput[2]);
                     break;
                     case occupied_slots:
+                    parkingLot.displayOccuipiedSlotsOf(splitInput[2]);
                     break;
                 }
                 break;

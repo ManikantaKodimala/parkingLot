@@ -2,23 +2,32 @@ package src;
 
 import java.util.ArrayList;
 
-public class ParkingLot {
+public final class  ParkingLot {
     private int noOfFloors;
     private int noOfSlots;
     private String parkingLotId;
     private Vechile[][] parkedVechiles;
+    private static ParkingLot parkingLot;
 
-    public ParkingLot(String parkingLotId, int noOfFloors,int noOfSlots){
+
+    private ParkingLot(String parkingLotId, int noOfFloors,int noOfSlots){
         this.noOfFloors=noOfFloors;
         this.noOfSlots=noOfSlots;
         this.parkedVechiles= new Vechile[noOfFloors][noOfSlots];
         this.parkingLotId=parkingLotId;
     }
-    
+
+    public static ParkingLot getInstance(String parkingLotId, int noOfFloors,int noOfSlots){
+        if(parkingLot == null)
+            parkingLot=new ParkingLot(parkingLotId,noOfFloors,noOfSlots);
+        return parkingLot;
+
+    }
     public void parkVechile(Vechile vechile){
-        int[] freeSlot=this.getAvailableFreeSlotFor(vechile.getType());
+        int[] freeSlot=this.getAFreeSlotFor(vechile.getType());
         int floorNumber=freeSlot[0];
         int slotNumber=freeSlot[1];
+        System.out.println("flornumber"+floorNumber+"slotNumber"+slotNumber);
         if(floorNumber>=1)
         {   
             this.parkedVechiles[floorNumber-1][slotNumber-1]=vechile;
@@ -32,35 +41,45 @@ public class ParkingLot {
         }
     }
     
-    private int[] getAvailableFreeSlotFor(String vechileType){
+    private int[] getAFreeSlotFor(String vechileType){
+        int floorNumber=-1;
+        ArrayList<ArrayList<Integer>> freeSlots;
         switch (vechileType) {
             case "CAR":
                 if(noOfSlots>3){
-                    return findFreeSlotIn(3, noOfSlots);
+                    freeSlots=findAllFreeSlotIn(3, noOfSlots);
+                    floorNumber=getFreeSlotFloorNumber(freeSlots);
+                    return new int[]{floorNumber,freeSlots.get(floorNumber-1).get(0)};
                 }
                 return new int[] {0,0};
+
             case "BIKE":
                 if(noOfSlots>1){
-                    return findFreeSlotIn(1, 3);
+                    freeSlots=findAllFreeSlotIn(1, 3);
+                    floorNumber=getFreeSlotFloorNumber(freeSlots);
+                    return new int[]{floorNumber,freeSlots.get(floorNumber-1).get(0)};
                 }
                 return new int[] {0,0};
             case "TRUCK" :
-                return findFreeSlotIn(0, 1);
+                freeSlots=findAllFreeSlotIn(0, 1);
+                floorNumber=getFreeSlotFloorNumber(freeSlots);
+                return new int[]{floorNumber,freeSlots.get(floorNumber-1).get(0)};
             default:
                 return new int[] {-1,-1};
         }
     }
-    private int[] findFreeSlotIn(int start,int end){
-        for (int i = 0; i < noOfFloors; i++) {
-            for (int j = start; j < end; j++) {
-                if(parkedVechiles[i][j]== null){
-                    return new int[]{i+1,j+1};
+    
+    public int getFreeSlotFloorNumber(ArrayList<ArrayList<Integer>> freeSlot){
+        int floorNumber=-1;
+        for(int i=0;i<noOfFloors;i++){
+            if(!freeSlot.get(i).isEmpty()){
+                floorNumber=i+1;
+                break;
                 }
-            }
         }
-        return new int[] {-1,-1};
+        return floorNumber;
     }
-
+    
     public void unparkVehicle(String ticketId){
 
         if(isTicketValid(ticketId)){
@@ -76,48 +95,14 @@ public class ParkingLot {
         }
     }
 
-    public boolean isTicketValid(String ticketId){
+    private boolean isTicketValid(String ticketId){
         int floorNumber=Integer.parseInt(ticketId.split("_",-1)[1])-1;
         int slotNumber=Integer.parseInt(ticketId.split("_",-1)[2])-1;
         return floorNumber<noOfFloors && slotNumber<noOfSlots && parkedVechiles[floorNumber][slotNumber]!=null;
     }
-    public void displayFreeCountOf(String vechileType){
-        ArrayList<ArrayList<Integer>> freeSlots;
-        switch (vechileType) {
-            case "CAR":
-                if(noOfSlots>3){
-                  freeSlots = findAllFreeSlotIn(3,noOfSlots);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for CAR on Floor"+(i+1)+" : "+freeSlots.get(i).size());
-                    }
-                }
-                else{
-                    System.out.println("Parking is not availabe for Car");
-                }
-                break;
-            case "BIKE":
-                if(noOfSlots>1){
-                  freeSlots = findAllFreeSlotIn(1,3);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for BIKE on Floor"+(i+1)+" : "+freeSlots.get(i).size());
-                    }
-                }
-                else{
-                    System.out.println("Parking is not availabe for BIKE");
-                }
-                break;
-            case "TRUCK" :
-                    freeSlots = findAllFreeSlotIn(0,1);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for TRUCK on Floor"+(i+1)+" : "+freeSlots.get(i).size());
-                    }
-                break;
-            default:
-                System.out.println("incorrect input");
-        }
-    }
+    
 
-    private ArrayList<ArrayList<Integer>> findAllFreeSlotIn(int start,int end){
+    public ArrayList<ArrayList<Integer>> findAllFreeSlotIn(int start,int end){
         ArrayList<ArrayList<Integer>> freeSlots =new ArrayList<ArrayList<Integer>>();
         for (int i = 0; i < noOfFloors; i++) {
             ArrayList<Integer> slots = new ArrayList<Integer>();
@@ -130,79 +115,10 @@ public class ParkingLot {
         }
         return freeSlots;
     }
-    public void displayFreeSlotsOf(String vechileType){
-        ArrayList<ArrayList<Integer>> freeSlots;
-        switch (vechileType) {
-            case "CAR":
-                if(noOfSlots>3){
-                  freeSlots = findAllFreeSlotIn(3,noOfSlots);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for CAR on Floor"+(i+1)+" : "+freeSlots.get(i).toString());
-                    }
-                }
-                else{
-                    System.out.println("Parking is not availabe for Car");
-                }
-                break;
-            case "BIKE":
-                if(noOfSlots>1){
-                  freeSlots = findAllFreeSlotIn(1,3);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for BIKE on Floor"+(i+1)+" : "+freeSlots.get(i).toString());
-                    }
-                }
-                else{
-                    System.out.println("Parking is not availabe for BIKE");
-                }
-                break;
-            case "TRUCK" :
-                    freeSlots = findAllFreeSlotIn(0,1);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for TRUCK on Floor"+(i+1)+" : "+freeSlots.get(i).toString());
-                    }
-                    break;
-            default:
-                System.out.println("incorrect input");
-        }
-    }
-    public void displayOccuipiedSlotsOf(String vechileType){
-        ArrayList<ArrayList<Integer>> occuipiedSlots;
-        switch (vechileType) {
-            case "CAR":
-                if(noOfSlots>3){
-                  occuipiedSlots = findAllOccuipiedSlotIn(3,noOfSlots);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for CAR on Floor"+(i+1)+" : "+occuipiedSlots.get(i).toString());
-                    }
-                }
-                else{
-                    System.out.println("Parking is not availabe for Car");
-                }
-                break;
-            case "BIKE":
-                if(noOfSlots>1){
-                  occuipiedSlots = findAllOccuipiedSlotIn(1,3);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for BIKE on Floor"+(i+1)+" : "+occuipiedSlots.get(i).toString());
-                    }
-                }
-                else{
-                    System.out.println("Parking is not availabe for BIKE");
-                }
-                break;
-            case "TRUCK" :
-                    occuipiedSlots = findAllOccuipiedSlotIn(0,1);
-                  for (int i = 0; i < noOfFloors; i++) {
-                        System.out.println("No. of free slots for TRUCK on Floor"+(i+1)+" : "+occuipiedSlots.get(i).toString());
-                    }
-                    break;
-            default:
-                System.out.println("incorrect input");
-        }
-    
-    }
 
-    private ArrayList<ArrayList<Integer>> findAllOccuipiedSlotIn(int start,int end){
+
+
+    public ArrayList<ArrayList<Integer>> findAllOccuipiedSlotIn(int start,int end){
         ArrayList<ArrayList<Integer>> freeSlots =new ArrayList<ArrayList<Integer>>();
         for (int i = 0; i < noOfFloors; i++) {
             ArrayList<Integer> slots = new ArrayList<Integer>();
@@ -216,5 +132,11 @@ public class ParkingLot {
         return freeSlots;
     }
 
+    public int getNoOfSlots() {
+    return this.noOfSlots;
+    }
 
+    public int getNoOfFloors() {
+        return this.noOfFloors;
+    }
 }

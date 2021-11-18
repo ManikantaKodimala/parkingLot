@@ -37,7 +37,7 @@ public final class  ParkingLot {
             System.out.println("Parking Lot Full");
         }
         else{
-            System.out.println("Parking is not availabe for"+vechile.getType());
+            System.out.println("Parking is not available for"+vechile.getType());
         }
     }
     
